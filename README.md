@@ -7,7 +7,6 @@
 - controller
     - selectVertices
     - selectEdges
-
     - findClosures
     - findLinks
     - findStars
