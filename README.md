@@ -1,5 +1,15 @@
 # Assignment1: LearnPLY
 
 
-## Add your functions
+## Edit your functions
+- meshprocessor
+	- rayIntersectsTriangle
+- controller
+    - selectVertices
+    - selectEdges
 
+    - findClosures
+    - findLinks
+    - findStars
+    - findBoundaries
+    - findInteriors
