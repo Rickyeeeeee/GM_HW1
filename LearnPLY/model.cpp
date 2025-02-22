@@ -12,7 +12,6 @@ void Model::setPolyhedron(Polyhedron *poly) {
   polyhedron->initialize();
 
   MeshProcessor::calcEdgeLength(polyhedron.get());
-  MeshProcessor::calcBoundingSphere(polyhedron.get());
   MeshProcessor::calcFaceNormalsAndArea(polyhedron.get());
   MeshProcessor::calcVertNormals(polyhedron.get());
 

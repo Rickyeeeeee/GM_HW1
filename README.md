@@ -4,6 +4,7 @@
 ## Edit your functions
 - meshprocessor
 	- rayIntersectsTriangle
+	- fixOrientation
 - controller
     - selectVertices
     - selectEdges

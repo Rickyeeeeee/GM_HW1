@@ -16,88 +16,22 @@ void MeshProcessor::calcVertNormals(Polyhedron *poly) {
 }
 
 void MeshProcessor::calcFaceNormalsAndArea(Polyhedron *poly) {
-  Eigen::Vector3d v0, v1, v2;
-  double length[3];
-
-  poly->area = 0.0;
-  for (int i = 0; i < poly->ntris(); i++) {
-    for (int j = 0; j < 3; j++) {
-      length[j] = poly->tlist[i]->edges[j]->length;
-    }
-    double temp_s = (length[0] + length[1] + length[2]) * 0.5;
-    poly->tlist[i]->area =
-        sqrt(temp_s * (temp_s - length[0]) * (temp_s - length[1]) * (temp_s - length[2]));
-
-    poly->area += poly->tlist[i]->area;
-    v1 << poly->vlist[poly->tlist[i]->verts[0]->index]->pos[0],
-          poly->vlist[poly->tlist[i]->verts[0]->index]->pos[1],
-          poly->vlist[poly->tlist[i]->verts[0]->index]->pos[2];
-    v2 << poly->vlist[poly->tlist[i]->verts[1]->index]->pos[0],
-          poly->vlist[poly->tlist[i]->verts[1]->index]->pos[1],
-          poly->vlist[poly->tlist[i]->verts[1]->index]->pos[2];
-    v0 << poly->vlist[poly->tlist[i]->verts[2]->index]->pos[0],
-          poly->vlist[poly->tlist[i]->verts[2]->index]->pos[1],
-          poly->vlist[poly->tlist[i]->verts[2]->index]->pos[2];
-    poly->tlist[i]->normal = (v0 - v1).cross(v2 - v1);
-    poly->tlist[i]->normal.normalize();
-  }
-
-  double signedVolume = 0.0;
-  Eigen::Vector3d test = poly->center;
-  for (int i = 0; i < poly->ntris(); i++) {
-    const Eigen::Vector3d &cent = poly->vlist[poly->tlist[i]->verts[0]->index]->pos;
-    signedVolume += (test - cent).dot(poly->tlist[i]->normal) * poly->tlist[i]->area;
-  }
-  signedVolume /= poly->area;
-  if (signedVolume < 0) {
-    poly->orientation = 0;
-  } else {
-    poly->orientation = 1;
     for (int i = 0; i < poly->ntris(); i++) {
-      poly->tlist[i]->normal *= -1.0;
-    }
-  }
-}
+        Vertex* v0 = poly->tlist[i]->verts[0];
+        Vertex* v1 = poly->tlist[i]->verts[1];
+        Vertex* v2 = poly->tlist[i]->verts[2];
+        poly->tlist[i]->normal = (v2->pos - v0->pos).cross(v1->pos - v0->pos);
 
-void MeshProcessor::calcBoundingSphere(Polyhedron *poly) {
-  Eigen::Vector3d minV, maxV;
-  for (int i = 0; i < poly->nverts(); i++) {
-    if (i == 0) {
-      minV = poly->vlist[i]->pos;
-      maxV = poly->vlist[i]->pos;
-    } else {
-      if (poly->vlist[i]->pos[0] < minV[0]) {
-        minV[0] = poly->vlist[i]->pos[0];
-      }
-      if (poly->vlist[i]->pos[0] > maxV[0]) {
-        maxV[0] = poly->vlist[i]->pos[0];
-      }
-      if (poly->vlist[i]->pos[1] < minV[1]) {
-        minV[1] = poly->vlist[i]->pos[1];
-      }
-      if (poly->vlist[i]->pos[1] > maxV[1]) {
-        maxV[1] = poly->vlist[i]->pos[1];
-      }
-      if (poly->vlist[i]->pos[2] < minV[2]) {
-        minV[2] = poly->vlist[i]->pos[2];
-      }
-      if (poly->vlist[i]->pos[2] > maxV[2]) {
-        maxV[2] = poly->vlist[i]->pos[2];
-      }
+        poly->tlist[i]->area = poly->tlist[i]->normal.norm() * 0.5;
+        poly->tlist[i]->normal.normalize();
     }
-  }
-  poly->center = (minV + maxV) * 0.5;
-  poly->radius = (poly->center - minV).norm();
 }
 
 void MeshProcessor::calcEdgeLength(Polyhedron *poly) {
-  Eigen::Vector3d v1, v2;
   for (int i = 0; i < poly->nedges(); i++) {
-    v1 << poly->elist[i]->verts[0]->pos[0], poly->elist[i]->verts[0]->pos[1],
-        poly->elist[i]->verts[0]->pos[2];
-    v2 << poly->elist[i]->verts[1]->pos[0], poly->elist[i]->verts[1]->pos[1],
-        poly->elist[i]->verts[1]->pos[2];
-    poly->elist[i]->length = (v1 - v2).norm();
+    Vertex* v0 = poly->elist[i]->verts[0];
+    Vertex* v1 = poly->elist[i]->verts[1];
+    poly->elist[i]->length = (v1->pos - v0->pos).norm();
   }
 }
 
@@ -116,11 +50,68 @@ Exit:
 bool MeshProcessor::rayIntersectsTriangle(Eigen::Vector3f &rayOrigin, Eigen::Vector3f &rayDirection,
                                           Eigen::Vector3f &v0, Eigen::Vector3f &v1, Eigen::Vector3f& v2,
                                           Eigen::Vector3f &out) {
+  float u = 0.0f, v = 0.0f, t = 0.0f;
   /*
   TODO: Implement the function to pick the edge
   */
 
-  // HINT: Store the (u,v,t) in out
-
+  //Store the (u,v,t) in out
+  out << u, v, t;
   return false;
-};
+}
+
+/******************************************************************************
+Make the triangles of the given polyhedron have the same relative orientation.
+
+Entry:
+  poly - pointer of polyhedron
+
+Exit:
+  return true if any triangle is filped; otherwise, return false
+******************************************************************************/
+bool MeshProcessor::fixOrientation(Polyhedron* poly)
+{ 
+    int filped_tri_counter = 0;
+    /*
+      TODO: Implement the function to pick the edge
+      Hint:
+        1. Start with a triangle
+        2. Use the corners and the corners' oppsite corners to find the adjacent triangles
+        3. For each pair of triangles, compare the order of the vertics on the shared edge
+           - checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1)
+        4. If the triangles have the oppsite relative orientation, filp the triangle 
+           - filpTriangle(Triangle* tri)
+           - filped_tri_counter++
+        5. Iteratively check all the triangles (BFS or DFS)
+    */
+
+    if (filped_tri_counter > 0){
+        std::cout << "Filp: " << filped_tri_counter << " triangles" << std::endl;
+        poly->recreate_corners();
+        calcVertNormals(poly);
+    }
+    return filped_tri_counter > 0;
+}
+
+/******************************************************************************
+Check if the edge has the same direction from v0 to v1
+
+Entry:
+  poly - pointer of polyhedron
+
+Exit:
+  return true if any triangle is filped; otherwise, return false
+******************************************************************************/
+bool MeshProcessor::checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1)
+{
+    return (edge->verts[0] == v0 && edge->verts[1] == v1);
+}
+
+/******************************************************************************
+Filp the order of the vertics in the given triangle
+******************************************************************************/
+void MeshProcessor::filpTriangle(Triangle* tri)
+{
+    std::swap(tri->verts[0], tri->verts[2]);
+    tri->normal = -tri->normal;
+}

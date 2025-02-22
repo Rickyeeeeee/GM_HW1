@@ -12,7 +12,6 @@ public:
   // Calc Functions from learnply
   static void calcVertNormals(Polyhedron *poly);
   static void calcFaceNormalsAndArea(Polyhedron *poly);
-  static void calcBoundingSphere(Polyhedron *poly);
   static void calcEdgeLength(Polyhedron *poly);
 
   // Getters
@@ -25,4 +24,8 @@ public:
   static bool rayIntersectsTriangle(Eigen::Vector3f &rayOrigin, Eigen::Vector3f &rayDirection,
                                     Eigen::Vector3f &v0, Eigen::Vector3f &v1, Eigen::Vector3f &v2,
                                     Eigen::Vector3f &out);
+  // Fix Orientation of the Triangles
+  static bool fixOrientation(Polyhedron* poly);
+  static bool checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1);
+  static void filpTriangle(Triangle* tri);
 };

@@ -94,11 +94,6 @@ public:
   std::vector<Edge *> elist;     /* list of edges */
   std::vector<Corner *> clist;   /* list of corners */
 
-  unsigned char orientation; // 0=ccw, 1=cw
-  Eigen::Vector3d center;
-  double radius;
-  double area;
-
 public:
   Polyhedron();
   Polyhedron(std::vector<Vertex *> &verts, std::vector<Triangle *> &tris, bool re_index = true);
@@ -114,16 +109,13 @@ public:
   void initialize();
   void finalize();
 
+  void recreate_corners();
+
 private:
   void create_edge(Vertex *, Vertex *);
   void create_edges();
   void create_corners();
-
-  void order_vertex_to_tri_ptrs(Vertex *);
   void set_vertex_to_tri_ptrs();
-
-  Triangle *find_edge(Triangle *, Vertex *, Vertex *);
-  Triangle *find_other_triangle(Edge *, Triangle *);
 };
 
 #endif /* __LEARNPLY_H__ */

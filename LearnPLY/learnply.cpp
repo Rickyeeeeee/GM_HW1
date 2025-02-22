@@ -1,15 +1,14 @@
 #include "learnply.h"
 #include "learnply_io.h"
-#include "meshprocessor.h"
 #include "ply.h"
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-Polyhedron::Polyhedron() : orientation(0), center(0.0, 0.0, 0.0), radius(0.0), area(0.0) {}
+Polyhedron::Polyhedron() {}
 
-Polyhedron::Polyhedron(std::vector<Vertex *> &verts, std::vector<Triangle *> &tris, bool re_index)
-    : orientation(0), center(0.0, 0.0, 0.0), radius(0.0), area(0.0) {
+Polyhedron::Polyhedron(std::vector<Vertex *> &verts, std::vector<Triangle *> &tris, bool re_index) {
   vlist = verts;
   tlist = tris;
   if (re_index) {
@@ -132,10 +131,6 @@ void Polyhedron::initialize() {
   set_vertex_to_tri_ptrs();
   /* make edges */
   create_edges();
-  /* order the pointers from vertices to faces */
-  for (int i = 0; i < nverts(); i++) {
-    order_vertex_to_tri_ptrs(vlist[i]);
-  }
   /* make corners */
   create_corners();
 }
@@ -143,52 +138,41 @@ void Polyhedron::initialize() {
 void Polyhedron::finalize() {
   int i;
   for (i = 0; i < ntris(); i++) {
-    free(tlist[i]);
+    delete tlist[i];
   }
   for (i = 0; i < nedges(); i++) {
-    elist[i]->tris.clear();
-    free(elist[i]);
+    delete elist[i];
   }
   for (i = 0; i < nverts(); i++) {
-    vlist[i]->tris.clear();
-    free(vlist[i]);
+    delete vlist[i];
+  }
+  for (i = 0; i < ncorners(); i++) {
+    delete clist[i];
   }
   tlist.clear();
   vlist.clear();
   elist.clear();
+  clist.clear();
 }
 
-/******************************************************************************
-Find out if there is another face that shares an edge with a given face.
-
-Entry:
-  f1    - face that we're looking to share with
-  v1,v2 - two vertices of f1 that define edge
-
-Exit:
-  return the matching face, or NULL if there is no such face
-******************************************************************************/
-Triangle *Polyhedron::find_edge(Triangle *f1, Vertex *v1, Vertex *v2) {
-  int i, j;
-  Triangle *f2;
-  Triangle *adjacent = NULL;
-
-  /* look through all faces of the first vertex */
-
-  for (i = 0; i < v1->ntris(); i++) {
-    f2 = v1->tris[i];
-    if (f2 == f1)
-      continue;
-    /* examine the vertices of the face for a match with the second vertex */
-    for (j = 0; j < 3; j++) {
-      /* look for a match */
-      if (f2->verts[j] == v2) {
-        /* if we've got a match, return this face */
-        return (f2);
-      }
+void Polyhedron::recreate_corners()
+{
+    for (int i = 0; i < ntris(); i++) {
+        tlist[i]->corners[0] = NULL;
+        tlist[i]->corners[1] = NULL;
+        tlist[i]->corners[2] = NULL;
     }
-  }
-  return (adjacent);
+    for (int i = 0; i < nedges(); i++) {
+        elist[i]->corners.clear();
+    }
+    for (int i = 0; i < nverts(); i++) {
+        vlist[i]->corners.clear();
+    }
+    for (int i = 0; i < ncorners(); i++) {
+        delete clist[i];
+    }
+    clist.clear();
+    create_corners();
 }
 
 /******************************************************************************
@@ -321,6 +305,7 @@ void Polyhedron::create_corners() {
     if (c0->oppsite != NULL) {
       continue;
     }
+    //not boundary
     if (e->ntris() > 1) {
       Corner *c1 = e->corners[1];
       c0->oppsite = c1;
@@ -339,122 +324,5 @@ void Polyhedron::set_vertex_to_tri_ptrs() {
       Vertex *v = f->verts[j];
       v->tris.push_back(f);
     }
-  }
-}
-
-/******************************************************************************
-Find the other triangle that is incident on an edge, or NULL if there is
-no other.
-******************************************************************************/
-Triangle *Polyhedron::find_other_triangle(Edge *edge, Triangle *tri) {
-  /* search for any other triangle */
-  for (int i = 0; i < edge->ntris(); i++)
-    if (edge->tris[i] != tri)
-      return (edge->tris[i]);
-
-  /* there is no such other triangle if we get here */
-  return (NULL);
-}
-
-/******************************************************************************
-Order the pointers to faces that are around a given vertex.
-
-Entry:
-  v - vertex whose face list is to be ordered
-******************************************************************************/
-void Polyhedron::order_vertex_to_tri_ptrs(Vertex *v) {
-  int i, j;
-  Triangle *f;
-  Triangle *fnext;
-  int nf;
-  int vindex;
-  int boundary;
-  int count;
-
-  nf = v->ntris();
-  f = v->tris[0];
-
-  /* go backwards (clockwise) around faces that surround a vertex */
-  /* to find out if we reach a boundary */
-
-  boundary = 0;
-
-  for (i = 1; i <= nf; i++) {
-
-    /* find reference to v in f */
-    vindex = -1;
-    for (j = 0; j < 3; j++)
-      if (f->verts[j] == v) {
-        vindex = j;
-        break;
-      }
-
-    /* error check */
-    if (vindex == -1) {
-      fprintf(stderr, "can't find vertex #1\n");
-      exit(-1);
-    }
-
-    /* corresponding face is the previous one around v */
-    fnext = find_other_triangle(f->edges[vindex], f);
-
-    /* see if we've reached a boundary, and if so then place the */
-    /* current face in the first position of the vertice's face list */
-
-    if (fnext == NULL) {
-      /* find reference to f in v */
-      for (j = 0; j < v->ntris(); j++)
-        if (v->tris[j] == f) {
-          v->tris[j] = v->tris[0];
-          v->tris[0] = f;
-          break;
-        }
-      boundary = 1;
-      break;
-    }
-
-    f = fnext;
-  }
-
-  /* now walk around the faces in the forward direction and place */
-  /* them in order */
-
-  f = v->tris[0];
-  count = 0;
-
-  for (i = 1; i < nf; i++) {
-
-    /* find reference to vertex in f */
-    vindex = -1;
-    for (j = 0; j < 3; j++)
-      if (f->verts[(j + 1) % 3] == v) {
-        vindex = j;
-        break;
-      }
-
-    /* error check */
-    if (vindex == -1) {
-      fprintf(stderr, "can't find vertex #2\n");
-      exit(-1);
-    }
-
-    /* corresponding face is next one around v */
-    fnext = find_other_triangle(f->edges[vindex], f);
-
-    /* break out of loop if we've reached a boundary */
-    count = i;
-    if (fnext == NULL) {
-      break;
-    }
-
-    /* swap the next face into its proper place in the face list */
-    for (j = 0; j < v->ntris(); j++)
-      if (v->tris[j] == fnext) {
-        v->tris[j] = v->tris[i];
-        v->tris[i] = fnext;
-        break;
-      }
-
-    f = fnext;
   }
 }

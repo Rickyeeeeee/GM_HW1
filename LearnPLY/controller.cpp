@@ -1,6 +1,11 @@
 #include "controller.h"
 #include "learnply.h"
+#include <stdio.h>
 #include <cstddef>
+#include <ImGUI/imgui.h>
+#include <ImGUI/imgui_impl_glfw.h>
+#include <ImGUI/imgui_impl_opengl3.h>
+#include <chrono>
 
 Controller::Controller(int width, int height, GLFWwindow *window, Scene *scenePtr)
     : screenWidth(width), screenHeight(height), isDragging(false), scene(scenePtr) {
@@ -71,6 +76,7 @@ void Controller::handleMouseScroll(double xoffset, double yoffset) {
 }
 
 void Controller::render() {
+  MeshRenderer* meshRenderer = scene->getModel()->getMeshRenderer();
   // Render GUI
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
@@ -107,7 +113,6 @@ void Controller::render() {
     }
 
     if (ImGui::Checkbox("Using Face Normal", &scene->drawFaceNormal)) {
-      MeshRenderer *meshRenderer = scene->getModel()->getMeshRenderer();
       meshRenderer->setNormalMode(scene->getModel()->getPolyhedron(), scene->drawFaceNormal);
     }
     ImGui::Checkbox("Wireframe", &scene->drawWireframe);
@@ -115,7 +120,7 @@ void Controller::render() {
     ImGui::Separator();
   }
 
-  // Selection and processing controls
+  // Selection controls
   if (ImGui::CollapsingHeader("Selection")) {
     ImGui::Text("Selection Mode");
     ImGui::Combo("##Selection Mode", &selectionMode, "None\0Faces\0Vertices\0Edges\0");
@@ -131,6 +136,17 @@ void Controller::render() {
       findInteriors();
     if (ImGui::Button("Clear Selections"))
       clearSelections();
+  }
+
+  // Processing controls
+  if (ImGui::CollapsingHeader("Process")) {
+      if (ImGui::Button("Fix Orientation")) {
+          bool flag = MeshProcessor::fixOrientation(scene->getModel()->getPolyhedron());
+          if (flag){
+              meshRenderer->setNormalMode(scene->getModel()->getPolyhedron(), scene->drawFaceNormal);
+          }
+      }
+          
   }
 
   ImGui::End();
@@ -296,7 +312,8 @@ int Controller::selectFaces(const double &x, const double &y) {
 
   // Initialize target with maximum values
   Eigen::Vector3f target(FLT_MAX, FLT_MAX, FLT_MAX); // u,v,t
-
+  // Get the starting time point
+  auto start = std::chrono::high_resolution_clock::now();
   // Test intersection with each triangle
   for (int i = 0; i < triangles.size(); i++) {
     const Triangle *tri = triangles[i];
@@ -315,13 +332,18 @@ int Controller::selectFaces(const double &x, const double &y) {
       }
     }
   }
+  // Get the ending time point
+  auto end = std::chrono::high_resolution_clock::now();
 
   // Toggle selection state of the intersected triangle if found
   if (tidx != -1) {
     mesh->tlist[tidx]->selected = !mesh->tlist[tidx]->selected;
     scene->getModel()->getMeshRenderer()->updateColors(mesh);
   }
-  std::cout << "Select Triangle Index: " << tidx << '\n';
+  std::cout << "Select Triangle Index: " << tidx;
+  // Calculate the elapsed time in milliseconds
+  std::chrono::duration<double, std::milli> elapsed = end - start;
+  std::cout << " (Elapsed time: " << elapsed.count() << " ms)" << std::endl;
   return tidx;
 }
 

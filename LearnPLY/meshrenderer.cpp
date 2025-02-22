@@ -190,19 +190,14 @@ void MeshRenderer::setNormalMode(Polyhedron *poly, bool using_face_normal) {
 
     size_t idx = 0;
     for (size_t i = 0; i < triangles.size(); i++) {
-      const Triangle *tri = triangles[i];
-
-      // Calculate face normal
-      Eigen::Vector3f v1 = (tri->verts[1]->pos - tri->verts[0]->pos).cast<float>();
-      Eigen::Vector3f v2 = (tri->verts[2]->pos - tri->verts[0]->pos).cast<float>();
-      Eigen::Vector3f faceNormal = v1.cross(v2).normalized();
-
-      for (int j = 0; j < 3; j++) {
-        faceNormalData[idx] = faceNormal.x();
-        faceNormalData[idx + 1] = faceNormal.y();
-        faceNormalData[idx + 2] = faceNormal.z();
-        idx += 3;
-      }
+        const Triangle* tri = triangles[i];
+        Eigen::Vector3f faceNormal = tri->normal.cast<float>();
+        for (int j = 0; j < 3; j++) {
+            faceNormalData[idx] = faceNormal.x();
+            faceNormalData[idx + 1] = faceNormal.y();
+            faceNormalData[idx + 2] = faceNormal.z();
+            idx += 3;
+        }
     }
 
     glBufferSubData(GL_ARRAY_BUFFER, 0, faceNormalData.size() * sizeof(float),

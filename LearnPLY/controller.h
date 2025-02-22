@@ -3,22 +3,8 @@
 #include "meshprocessor.h"
 #include "miscellaneous/camera.h"
 #include "miscellaneous/trackball.h"
-#include "renderer.h"
 #include "scene.h"
-#include <Eigen/Geometry>
 #include <GLFW/glfw3.h>
-#include <ImGUI/imgui.h>
-#include <ImGUI/imgui_impl_glfw.h>
-#include <ImGUI/imgui_impl_opengl3.h>
-#include <chrono>
-#include <cstddef>
-#include <ctime>
-#include <filesystem>
-#include <glad/glad.h>
-#include <iomanip>
-#include <memory>
-#include <stdexcept>
-#include <string>
 
 class Controller {
 public:
