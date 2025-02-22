@@ -76,10 +76,10 @@ bool MeshProcessor::fixOrientation(Polyhedron* poly)
       TODO: Implement the function to pick the edge
       Hint:
         1. Start with a triangle
-        2. Use the corners and the corners' oppsite corners to find the adjacent triangles
-        3. For each pair of triangles, compare the order of the vertics on the shared edge
+        2. Use the corners and the corners' opposite corners to find the adjacent triangles
+        3. For each pair of triangles, compare the order of the vertices on the shared edge
            - checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1)
-        4. If the triangles have the oppsite relative orientation, filp the triangle 
+        4. If the triangles have the opposite relative orientation, filp the triangle 
            - filpTriangle(Triangle* tri)
            - filped_tri_counter++
         5. Iteratively check all the triangles (BFS or DFS)
