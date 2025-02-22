@@ -71,7 +71,7 @@ Exit:
 ******************************************************************************/
 bool MeshProcessor::fixOrientation(Polyhedron* poly)
 { 
-    int filped_tri_counter = 0;
+    int fliped_tri_counter = 0;
     /*
       TODO: Implement the function to pick the edge
       Hint:
@@ -79,18 +79,18 @@ bool MeshProcessor::fixOrientation(Polyhedron* poly)
         2. Use the corners and the corners' opposite corners to find the adjacent triangles
         3. For each pair of triangles, compare the order of the vertices on the shared edge
            - checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1)
-        4. If the triangles have the opposite relative orientation, filp the triangle 
+        4. If the triangles have the opposite relative orientation, flip the triangle 
            - filpTriangle(Triangle* tri)
            - filped_tri_counter++
         5. Iteratively check all the triangles (BFS or DFS)
     */
 
-    if (filped_tri_counter > 0){
-        std::cout << "Filp: " << filped_tri_counter << " triangles" << std::endl;
+    if (fliped_tri_counter > 0){
+        std::cout << "Flip: " << fliped_tri_counter << " triangles" << std::endl;
         poly->recreate_corners();
         calcVertNormals(poly);
     }
-    return filped_tri_counter > 0;
+    return fliped_tri_counter > 0;
 }
 
 /******************************************************************************
