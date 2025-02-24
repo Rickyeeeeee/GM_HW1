@@ -77,8 +77,7 @@ bool MeshProcessor::fixOrientation(Polyhedron* poly)
       Hint:
         1. Start with a triangle
         2. Use the corners and the corners' opposite corners to find the adjacent triangles
-        3. For each pair of triangles, compare the order of the vertices on the shared edge
-           - checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1)
+        3. For each pair of triangles, compare the order of the vertices (corners) on the shared edge
         4. If the triangles have the opposite relative orientation, flip the triangle 
            - filpTriangle(Triangle* tri)
            - filped_tri_counter++
@@ -91,20 +90,6 @@ bool MeshProcessor::fixOrientation(Polyhedron* poly)
         calcVertNormals(poly);
     }
     return fliped_tri_counter > 0;
-}
-
-/******************************************************************************
-Check if the edge has the same direction from v0 to v1
-
-Entry:
-  poly - pointer of polyhedron
-
-Exit:
-  return true if any triangle is filped; otherwise, return false
-******************************************************************************/
-bool MeshProcessor::checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1)
-{
-    return (edge->verts[0] == v0 && edge->verts[1] == v1);
 }
 
 /******************************************************************************
