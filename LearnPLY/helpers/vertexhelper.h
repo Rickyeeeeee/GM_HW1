@@ -10,10 +10,10 @@ public:
   ~VertexHelper();
 
   void initialize(Shader* sphere_shader, Shader* text_shader);
-  void draw(const Eigen::Matrix4f &projectionMatrix, const Eigen::Matrix4f &viewMatrix,
-            const Eigen::Vector3f &translation);
-  void drawLabel(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix,
-                 const Eigen::Vector3f& translation, const Eigen::Vector3f& normal, const char* label);
+  void use(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix);
+  void draw(const Eigen::Vector3f &pos);
+  void useLabel(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix);
+  void drawLabel(const Eigen::Vector3f& pos, const Eigen::Vector3f& normal, const char* label);
 
 private:
   // OpenGL buffers

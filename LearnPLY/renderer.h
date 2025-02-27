@@ -40,8 +40,6 @@ private:
   Shader* plyShader;
   Shader* colorShader;
   Shader* textShader;
-  Shader* sphereShader;
-  Shader* edgeShader;
   Shader* axesShader;
 
   // Helpers

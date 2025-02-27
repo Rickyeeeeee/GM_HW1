@@ -2,7 +2,7 @@
 
 Renderer::Renderer(int width, int height, Scene *scenePtr)
     : screenWidth(width), screenHeight(height), scene(scenePtr), plyShader(nullptr),
-      colorShader(nullptr), textShader(nullptr), edgeShader(nullptr), axesShader(nullptr) {
+      colorShader(nullptr), textShader(nullptr), axesShader(nullptr) {
   if (!scene) {
     throw std::runtime_error("Scene pointer is null");
   }
@@ -20,7 +20,7 @@ Renderer::Renderer(int width, int height, Scene *scenePtr)
   vertexHelper->initialize(colorShader, textShader);
 
   edgeHelper = std::make_unique<EdgeHelper>();
-  edgeHelper->initialize(edgeShader);
+  edgeHelper->initialize(colorShader);
 
   axesHelper = std::make_unique<AxesHelper>();
   axesHelper->initialize(axesShader, 1.0f);
@@ -33,7 +33,6 @@ void Renderer::setupShaders() {
   colorShader = new Shader("../shaders/colorShader.vs.glsl",
                                "../shaders/colorShader.fs.glsl"); // Wireframe
   textShader = new Shader("../shaders/textShader.vs.glsl", "../shaders/textShader.fs.glsl");
-  edgeShader = new Shader("../shaders/selectedEdgeShader.vs.glsl", "../shaders/selectedEdgeShader.fs.glsl");
   axesShader = new Shader("../shaders/axesShader.vs.glsl", "../shaders/axesShader.fs.glsl");
 }
 
@@ -49,10 +48,6 @@ void Renderer::releaseShaders() {
   if (textShader != nullptr) {
     delete textShader;
     textShader = nullptr;
-  }
-  if (edgeShader != nullptr) {
-    delete edgeShader;
-    edgeShader = nullptr;
   }
   if (axesShader != nullptr) {
     delete axesShader;
@@ -94,26 +89,36 @@ void Renderer::render() {
   }
 
   // Vertex helper
+  vertexHelper->use(projection, view);
   for (auto &v : scene->getModel()->getPolyhedron()->vlist) {
     if (!v->selected) {
       continue;
     }
     Eigen::Vector3f pos = v->pos.cast<float>();
-    Eigen::Vector3f normal = v->normal.cast<float>();
-    vertexHelper->draw(projection, view, pos);
-    if (drawVertexLabel) {
-        vertexHelper->drawLabel(projection, view, pos, normal, std::to_string(v->index).c_str());
-    }
+    vertexHelper->draw(pos);
+  }
+
+  if (drawVertexLabel) {
+      vertexHelper->useLabel(projection, view);
+      for (auto& v : scene->getModel()->getPolyhedron()->vlist) {
+          if (!v->selected) {
+              continue;
+          }
+          Eigen::Vector3f pos = v->pos.cast<float>();
+          Eigen::Vector3f normal = v->normal.cast<float>();
+          vertexHelper->drawLabel(pos, normal, std::to_string(v->index).c_str());
+      }
   }
 
   // Edge helper
+  edgeHelper->use(projection, view);
   for (auto &e : scene->getModel()->getPolyhedron()->elist) {
-    if (!e->selected) {
+ /*   if (!e->selected) {
       continue;
-    }
+    }*/
     Eigen::Vector3f start = e->verts[0]->pos.cast<float>();
     Eigen::Vector3f end = e->verts[1]->pos.cast<float>();
-    edgeHelper->draw(projection, view, start, end);
+    edgeHelper->draw(start, end);
   }
 
   // Axes helper

@@ -95,31 +95,37 @@ void VertexHelper::createSphere(float radius, int segments, int rings) {
     indicesCount = indices.size();
 }
 
-void VertexHelper::draw(const Eigen::Matrix4f& projectionMatrix,
-                       const Eigen::Matrix4f& viewMatrix,
-                       const Eigen::Vector3f& translation) {
-    // Sphere rendering
+void VertexHelper::use(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix)
+{
     sphereShader->use();
     sphereShader->setVec3("color", 1.0f, 0.0f, 0.0f);
     sphereShader->setMat4("projection_matrix", projectionMatrix);
     sphereShader->setMat4("view_matrix", viewMatrix);
+}
+
+void VertexHelper::draw(const Eigen::Vector3f& pos) {
+    // Sphere rendering
     Eigen::Matrix4f model;
-    model << 1.0f, 0.0f, 0.0f, translation.x(),
-             0.0f, 1.0f, 0.0f, translation.y(),
-             0.0f, 0.0f, 1.0f, translation.z(),
+    model << 1.0f, 0.0f, 0.0f, pos.x(),
+             0.0f, 1.0f, 0.0f, pos.y(),
+             0.0f, 0.0f, 1.0f, pos.z(),
              0.0f, 0.0f, 0.0f, 1.0f;
     sphereShader->setMat4("model_matrix", model);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)indicesCount, GL_UNSIGNED_INT, 0);
 }
 
-void VertexHelper::drawLabel(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix, const Eigen::Vector3f& translation, const Eigen::Vector3f& normal, const char* label)
+void VertexHelper::useLabel(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix)
 {
-    // Text rendering
     textShader->use();
     textShader->setMat4("projection_matrix", projectionMatrix);
     textShader->setMat4("view_matrix", viewMatrix);
+}
+
+void VertexHelper::drawLabel(const Eigen::Vector3f& pos, const Eigen::Vector3f& normal, const char* label)
+{
+    // Text rendering
     textShader->setVec3("normal", normal);
-    textShader->setVec3("translation", translation);
+    textShader->setVec3("translation", pos);
     textRenderer->Render(label);
 }

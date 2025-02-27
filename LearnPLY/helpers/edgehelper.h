@@ -10,12 +10,13 @@ public:
   ~EdgeHelper();
 
   void initialize(Shader* edge_shader);
-  void draw(const Eigen::Matrix4f &projectionMatrix, const Eigen::Matrix4f &viewMatrix,
-            const Eigen::Vector3f &start, const Eigen::Vector3f &end);
+  void use(const Eigen::Matrix4f& projectionMatrix, const Eigen::Matrix4f& viewMatrix);
+  void draw(const Eigen::Vector3f &start, const Eigen::Vector3f &end);
 
 private:
-  GLuint VAO, VBO;
+  GLuint VAO, VBO, EBO;
   Shader *edgeShader;
+  size_t indicesCount;
 
-  void createLine();
+  void createCylinder(float radius = 0.005f, int segments = 16);
 };
