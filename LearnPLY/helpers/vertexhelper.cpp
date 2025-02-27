@@ -12,9 +12,6 @@ VertexHelper::VertexHelper()
 }
 
 VertexHelper::~VertexHelper() {
-    delete sphereShader;
-    delete textShader;
-
     if (VAO) glDeleteVertexArrays(1, &VAO);
     if (VBO) glDeleteBuffers(1, &VBO);
     if (EBO) glDeleteBuffers(1, &EBO);

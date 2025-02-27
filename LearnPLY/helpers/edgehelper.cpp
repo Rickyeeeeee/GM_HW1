@@ -3,7 +3,6 @@
 EdgeHelper::EdgeHelper() : VAO(0), VBO(0), edgeShader(nullptr) {}
 
 EdgeHelper::~EdgeHelper() {
-  delete edgeShader;
   if (VAO != 0)
     glDeleteVertexArrays(1, &VAO);
   if (VBO != 0)
