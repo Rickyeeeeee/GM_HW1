@@ -113,9 +113,9 @@ void Renderer::render() {
   // Edge helper
   edgeHelper->use(projection, view);
   for (auto &e : scene->getModel()->getPolyhedron()->elist) {
- /*   if (!e->selected) {
+    if (!e->selected) {
       continue;
-    }*/
+    }
     Eigen::Vector3f start = e->verts[0]->pos.cast<float>();
     Eigen::Vector3f end = e->verts[1]->pos.cast<float>();
     edgeHelper->draw(start, end);

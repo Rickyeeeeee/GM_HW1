@@ -36,17 +36,12 @@ void EdgeHelper::draw(const Eigen::Vector3f &start, const Eigen::Vector3f &end) 
   ly = lx.cross(lz);
   ly.normalize();
   //rendering
-  Eigen::Matrix4f modelRT;
-  modelRT << len * lx.x(), ly.x(), lz.x(), start.x(),
-             len * lx.y(), ly.y(), lz.y(), start.y(),
-             len * lx.z(), ly.z(), lz.z(), start.z(),
+  Eigen::Matrix4f model;
+  model << len * lx.x(), ly.x(), lz.x(), start.x(),
+           len * lx.y(), ly.y(), lz.y(), start.y(),
+           len * lx.z(), ly.z(), lz.z(), start.z(),
            0.0f, 0.0f, 0.0f, 1.0f;
-  //Eigen::Matrix4f modelS;
-  //modelS << len, 0.0f, 0.0f, 0.0f,
-  //          0.0f, 1.0f, 0.0f, 0.0f,
-  //          0.0f, 0.0f, 1.0f, 0.0f,
-  //          0.0f, 0.0f, 0.0f, 1.0f;
-  edgeShader->setMat4("model_matrix", modelRT);
+  edgeShader->setMat4("model_matrix", model);
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, (GLsizei)indicesCount, GL_UNSIGNED_INT, 0);
 
