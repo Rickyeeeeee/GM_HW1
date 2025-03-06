@@ -44,10 +44,6 @@ void EdgeHelper::draw(const Eigen::Vector3f &start, const Eigen::Vector3f &end) 
   edgeShader->setMat4("model_matrix", model);
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, (GLsizei)indicesCount, GL_UNSIGNED_INT, 0);
-
-  glBindVertexArray(VAO);
-  glLineWidth(3.0f);
-  glDrawArrays(GL_LINES, 0, 2);
 }
 
 void EdgeHelper::createCylinder(float radius, int segments)
