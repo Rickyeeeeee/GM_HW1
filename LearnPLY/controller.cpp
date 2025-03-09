@@ -785,6 +785,36 @@ void Controller::findBoundaries() {
   TODO: Implement the function to find the boundaries
   */
 
+  // For all selected triangles, find the edges that are not shared by any other triangles
+  std::vector<Edge*> selectedEdges;
+
+  for (const auto& tri : mesh->tlist) {
+	  if (tri->selected) {
+		  for (const auto& edge : tri->edges) {
+			  bool shared = false;
+			  for (const auto& tri2 : edge->tris) {
+				  if (tri2 != tri && tri2->selected == true) {
+					  shared = true;
+					  break;
+				  }
+			  }
+			  if (!shared) {
+				  selectedEdges.push_back(edge);
+			  }
+		  }
+	  }
+  }
+
+  // Clear all selections
+  clearSelections();
+
+  // Select the boundary edges and vertices
+  for (auto& edge : selectedEdges) {
+	  edge->selected = true;
+	  edge->verts[0]->selected = true;
+	  edge->verts[1]->selected = true;
+  }
+
   scene->getModel()->getMeshRenderer()->updateColors(mesh);
 }
 
@@ -793,6 +823,32 @@ void Controller::findInteriors() {
   /*
   TODO: Implement the function to find the interiors
   */
+  // For all selected triangles, find the edges that are not shared by any other triangles
+  std::vector<Edge*> selectedEdges;
+
+  for (const auto& tri : mesh->tlist) {
+	  if (tri->selected) {
+		  for (const auto& edge : tri->edges) {
+			  bool shared = false;
+			  for (const auto& tri2 : edge->tris) {
+				  if (tri2 != tri && tri2->selected == true) {
+					  shared = true;
+					  break;
+				  }
+			  }
+			  if (!shared) {
+				  selectedEdges.push_back(edge);
+			  }
+		  }
+	  }
+  }
+
+  // Select the boundary edges and vertices
+  for (auto& edge : selectedEdges) {
+	  edge->selected = false;
+	  edge->verts[0]->selected = false;
+	  edge->verts[1]->selected = false;
+  }
 
   scene->getModel()->getMeshRenderer()->updateColors(mesh);
 }
