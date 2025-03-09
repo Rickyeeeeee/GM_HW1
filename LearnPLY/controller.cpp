@@ -671,11 +671,72 @@ void Controller::findLinks() {
   TODO: Implement the function to find the links
   */
   // Compute Closure(Star(s)) \ Star(Closure(s))
+  // 1. Compute Closure(Star(s))
+  std::vector<Edge*> linkEdges;
+  std::vector<Vertex*> linkVertices;
+  std::vector<Triangle*> linkTriangles;
   std::vector<Edge*> selectedEdges;
   std::vector<Vertex*> selectedVertices;
+  std::vector<Triangle*> selectedTriangles;
 
+  for (const auto& vertex : mesh->vlist) {
+	  if (vertex->selected) {
+		  selectedVertices.push_back(vertex);
+		  for (const auto& tri : vertex->tris) {
+			  linkTriangles.push_back(tri);
+		  }
+	  }
+  }
 
+  for (const auto& edge : mesh->elist) {
+	  if (edge->selected) {
+		  selectedEdges.push_back(edge);
+		  edge->verts[0]->selected = true;
+		  edge->verts[1]->selected = true;
+		  selectedVertices.push_back(edge->verts[0]);
+		  selectedVertices.push_back(edge->verts[1]);
+		  // Add all the vertices that contain the edge
+		  for (const auto& tri : edge->tris) {
+			  linkTriangles.push_back(tri);
+		  }
+	  }
+  }
 
+  for (const auto& tri : linkTriangles) {
+	  tri->selected = false;
+	  for (const auto& vertex : tri->verts) {
+		  if (!vertex->selected) {
+			  linkVertices.push_back(vertex);
+		  }
+	  }
+	  for (const auto& edge : tri->edges) {
+		  if (!edge->selected && !edge->verts[0]->selected && !edge->verts[1]->selected) {
+			  linkEdges.push_back(edge);
+		  }
+	  }
+  }	
+
+  for (auto& vertex : linkVertices) {
+	  vertex->selected = true;
+  }
+
+  for (auto& edge : linkEdges) {
+	  edge->selected = true;
+  }
+	
+  for (auto& vertex : selectedVertices) {
+	  vertex->selected = false;
+  }
+
+  for (auto& edge : selectedEdges) {
+	  edge->verts[0]->selected = false;
+	  edge->verts[1]->selected = false;
+	  edge->selected = false;
+  }
+
+  for (auto& tri : mesh->tlist) {
+	  tri->selected = false;
+  }
   scene->getModel()->getMeshRenderer()->updateColors(mesh);
 }
 
