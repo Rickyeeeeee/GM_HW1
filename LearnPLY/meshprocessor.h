@@ -24,6 +24,10 @@ public:
   static bool rayIntersectsTriangle(Eigen::Vector3f &rayOrigin, Eigen::Vector3f &rayDirection,
                                     Eigen::Vector3f &v0, Eigen::Vector3f &v1, Eigen::Vector3f &v2,
                                     Eigen::Vector3f &out);
+
+  static bool rayIntersectsSphere(const Eigen::Vector3f& rayOrigin, const Eigen::Vector3f& rayDirection,
+	                              const Eigen::Vector3f& center, float radius);
+
   // Fix Orientation of the Triangles
   static bool fixOrientation(Polyhedron* poly);
   static bool checkEdgeDirection(Edge* edge, Vertex* v0, Vertex* v1);

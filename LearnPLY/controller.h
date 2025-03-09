@@ -40,6 +40,7 @@ private:
   // Selection functions
   void clearSelections();
   int selectFaces(const double &x, const double &y);
+  int selectFacesImproved(double x, double y);
   int selectVertices(const double &x, const double &y);
   int selectEdges(const double &x, const double &y);
 

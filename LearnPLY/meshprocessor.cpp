@@ -55,9 +55,35 @@ bool MeshProcessor::rayIntersectsTriangle(Eigen::Vector3f &rayOrigin, Eigen::Vec
   TODO: Implement the function to pick the edge
   */
 
+  auto vo0 = rayOrigin - v0;
+  auto v10 = v1 - v0;
+  auto v20 = v2 - v0;
+  auto p = rayDirection.cross(v20);
+  auto q = vo0.cross(v10);
+  t = q.dot(v20) / p.dot(v10);
+  u = p.dot(vo0) / p.dot(v10);
+  v = q.dot(rayDirection) / p.dot(v10);
+
   //Store the (u,v,t) in out
   out << u, v, t;
-  return false;
+  return (u >= 0 && v >= 0 && u + v <= 1.1);
+}
+
+bool MeshProcessor::rayIntersectsSphere(const Eigen::Vector3f& rayOrigin, const Eigen::Vector3f& rayDirection, const Eigen::Vector3f& center, float radius)
+{
+    
+	Eigen::Vector3f oc = rayOrigin - center;
+	float a = rayDirection.dot(rayDirection);
+	float b = 2.0 * oc.dot(rayDirection);
+	float c = oc.dot(oc) - radius * radius;
+	float discriminant = b * b - 4 * a * c;
+	if (discriminant < 0) {
+		return false;
+	}
+	else {
+		return true;
+	}
+
 }
 
 /******************************************************************************
