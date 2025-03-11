@@ -1,5 +1,7 @@
 #include "meshprocessor.h"
 #include "learnply.h"
+#include <queue>
+#include <set>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -109,6 +111,63 @@ bool MeshProcessor::fixOrientation(Polyhedron* poly)
            - filped_tri_counter++
         5. Iteratively check all the triangles (BFS or DFS)
     */
+
+	std::queue<Triangle*> q;
+	std::set<int> visited;
+
+	q.push(poly->tlist[0]);
+	visited.insert(poly->tlist[0]->index);
+
+	while (!q.empty()) {
+		Triangle* tri = q.front();
+		q.pop();
+		for (int i = 0; i < 3; i++) {
+			Corner* c = tri->corners[i];
+			if (!c->oppsite) continue; // if the edge is on the boundary, skip it
+			Corner* opp_c = c->oppsite;
+			Triangle* adj_tri = opp_c->tri;
+			if (visited.find(adj_tri->index) == visited.end()) {
+				// Edge shared by two triangles
+				Edge* e = c->edge;
+				int v0 = e->verts[0]->index;
+				int v1 = e->verts[1]->index;
+				// Find the indeces on both triangles
+				int v0_tri = -1;
+				int v1_tri = -1;
+				for (int j = 0; j < 3; j++) {
+					if (tri->verts[j]->index == v0) {
+						v0_tri = j;
+					}
+					if (tri->verts[j]->index == v1) {
+						v1_tri = j;
+					}
+				}
+				int v0_adj = -1;
+				int v1_adj = -1;
+				for (int j = 0; j < 3; j++) {
+					if (adj_tri->verts[j]->index == v0) {
+						v0_adj = j;
+					}
+					if (adj_tri->verts[j]->index == v1) {
+						v1_adj = j;
+					}
+				}
+				// Check the orientation
+
+				bool isFlipped = (v0_tri + 1) % 3 == v1_tri;  // v0 ¡÷ v1 in tri (counter-clockwise)
+				bool isFlippedAdj = (v0_adj + 1) % 3 == v1_adj; // v0 ¡÷ v1 in adj_tri (counter-clockwise)
+
+				if (isFlipped == isFlippedAdj) { // If orientations differ
+					filpTriangle(adj_tri);
+					fliped_tri_counter++;
+				}
+
+				q.push(adj_tri);
+				visited.insert(adj_tri->index);
+
+			}
+		}
+	}	
 
     if (fliped_tri_counter > 0){
         std::cout << "Flip: " << fliped_tri_counter << " triangles" << std::endl;
